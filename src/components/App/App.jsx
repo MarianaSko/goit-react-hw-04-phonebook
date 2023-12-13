@@ -25,7 +25,7 @@ export const App = () => {
     }
 
     localStorage.setItem('CONTACTS_DATA', JSON.stringify(contacts));
-  }, [contacts.length]);
+  }, [contacts]);
 
   const createContact = (name, number) => {
     setContacts(prev => [...prev, { name, number, id: nanoid() }]);
