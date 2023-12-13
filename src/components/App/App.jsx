@@ -12,7 +12,7 @@ import { useState, useEffect } from 'react';
 
 export const App = () => {
   const [contacts, setContacts] = useState([
-    ...JSON.parse(localStorage.getItem('CONTACTS_DATA')),
+    ...(JSON.parse(localStorage.getItem('CONTACTS_DATA')) ?? []),
   ]);
   const [filter, setFilter] = useState('');
   const [name, setName] = useState('');
