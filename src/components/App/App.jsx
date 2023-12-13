@@ -9,100 +9,87 @@ import {
   StyledMainHeading,
   StyledHeading,
 } from './App.styled';
+import { useState, useEffect } from 'react';
 
-export class App extends Component {
-  state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
-    filter: '',
-  };
+export const App = () => {
+  const [contacts, setContacts] = useState([
+    ...JSON.parse(localStorage.getItem('CONTACTS_DATA')),
+  ]);
+  const [filter, setFilter] = useState('');
+  const [name, setName] = useState('');
+  const [number, setNumber] = useState('');
 
-  componentDidMount() {
-    const contacts = JSON.parse(localStorage.getItem('CONTACTS_DATA'));
+  useEffect(() => {
     if (contacts?.length) {
-      this.setState({ contacts });
+      setContacts(contacts);
     }
-  }
 
-  componentDidUpdate(_, prevState) {
-    if (prevState.contacts.length !== this.state.contacts.length) {
-      localStorage.setItem(
-        'CONTACTS_DATA',
-        JSON.stringify(this.state.contacts)
-      );
-    }
-  }
+    localStorage.setItem('CONTACTS_DATA', JSON.stringify(contacts));
+  }, [contacts.length]);
 
-  createContact = contact => {
-    this.setState(prev => ({
-      contacts: [
-        ...prev.contacts,
-        { name: contact.name, number: contact.number, id: nanoid() },
-      ],
-    }));
+  const createContact = (name, number) => {
+    setContacts(prev => [...prev, { name, number, id: nanoid() }]);
   };
 
-  handleSubmit = event => {
+  const handleSubmit = event => {
     event.preventDefault();
-    for (let item of this.state.contacts) {
-      if (item.name === this.state.name) {
+    for (let item of contacts) {
+      if (item.name === name) {
         alert(`${item.name} is already in contacts.`);
         event.currentTarget.reset();
         return;
       }
     }
-    this.createContact(this.state);
+    createContact(name, number);
     event.currentTarget.reset();
   };
 
-  handleChange = ({ target: { name, value } }) => {
-    this.setState({ [name]: value });
+  const handleChange = ({ target: { name, value } }) => {
+    switch (name) {
+      case 'name':
+        setName(value);
+        break;
+      case 'number':
+        setNumber(value);
+        break;
+      default:
+        return;
+    }
   };
 
-  handleFilter = e => {
-    this.setState({ filter: e.target.value });
+  const handleFilter = e => {
+    setFilter(e.target.value);
   };
 
-  getFilteredContacts = () => {
-    return this.state.contacts.filter(contact =>
-      contact.name.toLowerCase().includes(this.state.filter.toLowerCase())
+  const getFilteredContacts = () => {
+    return contacts.filter(contact =>
+      contact.name.toLowerCase().includes(filter.toLowerCase())
     );
   };
 
-  onDeleteContact = id => {
-    this.setState(prev => ({
-      contacts: prev.contacts.filter(contact => contact.id !== id),
-    }));
+  const onDeleteContact = id => {
+    setContacts(prev => prev.filter(contact => contact.id !== id));
   };
 
-  render() {
-    return (
-      <Container>
-        <StyledMainHeading>Phonebook</StyledMainHeading>
+  return (
+    <Container>
+      <StyledMainHeading>Phonebook</StyledMainHeading>
 
-        <ContactForm
-          handleSubmit={this.handleSubmit}
-          handleChange={this.handleChange}
-        />
-        <StyledHeading>Contacts</StyledHeading>
-        {this.state.contacts.length ? (
-          <div>
-            <Filter handleFilter={this.handleFilter} />
-            <ContactList
-              getFilteredContacts={this.getFilteredContacts}
-              onDeleteContact={this.onDeleteContact}
-            ></ContactList>
-          </div>
-        ) : (
-          <StyledMessage>
-            You don't have any contacts in your phonebook yet.
-          </StyledMessage>
-        )}
-      </Container>
-    );
-  }
-}
+      <ContactForm handleSubmit={handleSubmit} handleChange={handleChange} />
+      <StyledHeading>Contacts</StyledHeading>
+      {contacts.length ? (
+        <div>
+          <Filter handleFilter={handleFilter} />
+          <ContactList
+            getFilteredContacts={getFilteredContacts}
+            onDeleteContact={onDeleteContact}
+          ></ContactList>
+        </div>
+      ) : (
+        <StyledMessage>
+          You don't have any contacts in your phonebook yet.
+        </StyledMessage>
+      )}
+    </Container>
+  );
+};
